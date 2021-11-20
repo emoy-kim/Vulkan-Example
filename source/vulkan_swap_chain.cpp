@@ -144,9 +144,9 @@ void SwapChainVK::createSwapChain()
    create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
    QueueFamilyIndices indices = Device->findPhysicalQueueFamilies();
-   uint32_t queue_family_indices[] = { indices.graphicsFamily, indices.presentFamily };
+   uint32_t queue_family_indices[] = { indices.GraphicsFamily, indices.PresentFamily };
 
-   if (indices.graphicsFamily != indices.presentFamily) {
+   if (indices.GraphicsFamily != indices.PresentFamily) {
       create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
       create_info.queueFamilyIndexCount = 2;
       create_info.pQueueFamilyIndices = queue_family_indices;

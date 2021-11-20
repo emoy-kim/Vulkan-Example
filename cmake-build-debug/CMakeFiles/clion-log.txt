@@ -1,8 +1,0 @@
-/home/jeesun/다운로드/clion-2020.2.5/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=/usr/bin/gcc-11 -DCMAKE_CXX_COMPILER=/usr/bin/g++-11 -DCMAKE_DEPENDS_USE_COMPILER=FALSE -G "CodeBlocks - Unix Makefiles" /home/jeesun/Work/vulkan_framework
--- Compiler
--- >> ID      : GNU
--- >> Version : 11.1.0
--- >> Path    : /usr/bin/g++-11
--- Configuring done
--- Generating done
--- Build files have been written to: /home/jeesun/Work/vulkan_framework/cmake-build-debug

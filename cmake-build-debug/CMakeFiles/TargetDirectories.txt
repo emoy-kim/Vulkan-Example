@@ -1,4 +1,0 @@
-/home/jeesun/Work/vulkan_framework/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/jeesun/Work/vulkan_framework/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/jeesun/Work/vulkan_framework/cmake-build-debug/CMakeFiles/shaders.dir
-/home/jeesun/Work/vulkan_framework/cmake-build-debug/CMakeFiles/vulkan_framework.dir
