@@ -1,0 +1,43 @@
+/*
+ * Author: Emoy Kim
+ * E-mail: emoy.kim_AT_gmail.com
+ * 
+ * This code is a free software; it can be freely used, changed and redistributed.
+ * If you use any version of the code, please reference the code.
+ * 
+ */
+
+#pragma once
+
+#define GLFW_INCLUDE_VULKAN
+#include <glfw3.h>
+#include <vulkan/vulkan.h>
+#include <glm.hpp>
+#include <common.hpp>
+#include <gtc/type_ptr.hpp>
+#include <gtc/constants.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/quaternion.hpp>
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define GLM_ENABLE_EXPERIMENTAL
+#include <gtx/quaternion.hpp>
+
+#include <FreeImage.h>
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
+#include <vector>
+#include <string>
+#include <map>
+#include <unordered_map>
+#include <set>
+#include <unordered_set>
+#include <sstream>
+#include <fstream>
+#include <memory>
+#include <chrono>
+
+using uchar = unsigned char;
+using uint = unsigned int;
