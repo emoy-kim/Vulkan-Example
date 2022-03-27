@@ -88,7 +88,7 @@ public:
    inline static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
    RendererVK();
-   ~RendererVK() = default;
+   ~RendererVK();
 
    void play();
 
@@ -192,6 +192,7 @@ private:
       reinterpret_cast<RendererVK*>(glfwGetWindowUserPointer( window ))->FramebufferResized = true;
    }
 
+   void cleanupSwapChain();
    void initializeWindow();
    void createSurface();
    [[nodiscard]] QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
@@ -256,12 +257,9 @@ private:
    void createSyncObjects();
    void initializeVulkan();
    void recordCommandBuffer(VkCommandBuffer command_buffer, uint32_t image_index);
-   void cleanupSwapChain();
    void recreateSwapChain();
    void updateUniformBuffer(uint32_t current_image);
    void drawFrame();
-   void mainLoop();
-   void cleanup();
    [[nodiscard]] static std::vector<const char*> getRequiredExtensions();
    void createInstance();
 };

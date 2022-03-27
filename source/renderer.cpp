@@ -10,12 +10,54 @@ RendererVK::RendererVK() :
 
 }
 
-void RendererVK::play()
+RendererVK::~RendererVK()
 {
-   initializeWindow();
-   initializeVulkan();
-   mainLoop();
-   cleanup();
+   cleanupSwapChain();
+   for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
+      vkDestroyBuffer( Device, UniformBuffers[i], nullptr );
+      vkFreeMemory( Device, UniformBuffersMemory[i], nullptr );
+   }
+   vkDestroyDescriptorPool( Device, DescriptorPool, nullptr );
+   vkDestroySampler( Device, TextureSampler, nullptr );
+   vkDestroyImageView( Device, TextureImageView, nullptr );
+   vkDestroyImage( Device, TextureImage, nullptr );
+   vkFreeMemory( Device, TextureImageMemory, nullptr );
+   vkDestroyDescriptorSetLayout( Device, DescriptorSetLayout, nullptr);
+   vkDestroyBuffer( Device, IndexBuffer, nullptr );
+   vkFreeMemory( Device, IndexBufferMemory, nullptr );
+   vkDestroyBuffer( Device, VertexBuffer, nullptr );
+   vkFreeMemory( Device, VertexBufferMemory, nullptr );
+   for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+      vkDestroySemaphore( Device, RenderFinishedSemaphores[i], nullptr );
+      vkDestroySemaphore( Device, ImageAvailableSemaphores[i], nullptr );
+      vkDestroyFence( Device, InFlightFences[i], nullptr );
+   }
+   vkDestroyCommandPool( Device, CommandPool, nullptr );
+   vkDestroyDevice( Device, nullptr );
+#ifdef _DEBUG
+   destroyDebugUtilsMessengerEXT( Instance, DebugMessenger, nullptr );
+#endif
+   vkDestroySurfaceKHR( Instance, Surface, nullptr );
+   vkDestroyInstance( Instance, nullptr );
+   glfwDestroyWindow( Window );
+   glfwTerminate();
+}
+
+void RendererVK::cleanupSwapChain()
+{
+   vkDestroyImageView( Device, DepthImageView, nullptr );
+   vkDestroyImage( Device, DepthImage, nullptr );
+   vkFreeMemory( Device, DepthImageMemory, nullptr );
+   for (auto framebuffer : SwapChainFramebuffers) {
+      vkDestroyFramebuffer( Device, framebuffer, nullptr );
+   }
+   vkDestroyPipeline( Device, GraphicsPipeline, nullptr );
+   vkDestroyPipelineLayout( Device, PipelineLayout, nullptr );
+   vkDestroyRenderPass( Device, RenderPass, nullptr );
+   for (auto image_view : SwapChainImageViews) {
+      vkDestroyImageView( Device, image_view, nullptr );
+   }
+   vkDestroySwapchainKHR( Device, SwapChain, nullptr );
 }
 
 void RendererVK::initializeWindow()
@@ -1461,23 +1503,6 @@ void RendererVK::recordCommandBuffer(VkCommandBuffer command_buffer, uint32_t im
    }
 }
 
-void RendererVK::cleanupSwapChain()
-{
-   vkDestroyImageView( Device, DepthImageView, nullptr );
-   vkDestroyImage( Device, DepthImage, nullptr );
-   vkFreeMemory( Device, DepthImageMemory, nullptr );
-   for (auto framebuffer : SwapChainFramebuffers) {
-      vkDestroyFramebuffer( Device, framebuffer, nullptr );
-   }
-   vkDestroyPipeline( Device, GraphicsPipeline, nullptr );
-   vkDestroyPipelineLayout( Device, PipelineLayout, nullptr );
-   vkDestroyRenderPass( Device, RenderPass, nullptr );
-   for (auto imageView : SwapChainImageViews) {
-      vkDestroyImageView( Device, imageView, nullptr );
-   }
-   vkDestroySwapchainKHR( Device, SwapChain, nullptr );
-}
-
 void RendererVK::recreateSwapChain()
 {
    int width = 0, height = 0;
@@ -1607,48 +1632,6 @@ void RendererVK::drawFrame()
    CurrentFrame = (CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void RendererVK::mainLoop()
-{
-   while (!glfwWindowShouldClose( Window )) {
-      glfwPollEvents();
-      drawFrame();
-   }
-   vkDeviceWaitIdle( Device );
-}
-
-void RendererVK::cleanup()
-{
-   cleanupSwapChain();
-   for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
-      vkDestroyBuffer( Device, UniformBuffers[i], nullptr );
-      vkFreeMemory( Device, UniformBuffersMemory[i], nullptr );
-   }
-   vkDestroyDescriptorPool( Device, DescriptorPool, nullptr );
-   vkDestroySampler( Device, TextureSampler, nullptr );
-   vkDestroyImageView( Device, TextureImageView, nullptr );
-   vkDestroyImage( Device, TextureImage, nullptr );
-   vkFreeMemory( Device, TextureImageMemory, nullptr );
-   vkDestroyDescriptorSetLayout( Device, DescriptorSetLayout, nullptr);
-   vkDestroyBuffer( Device, IndexBuffer, nullptr );
-   vkFreeMemory( Device, IndexBufferMemory, nullptr );
-   vkDestroyBuffer( Device, VertexBuffer, nullptr );
-   vkFreeMemory( Device, VertexBufferMemory, nullptr );
-   for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-      vkDestroySemaphore( Device, RenderFinishedSemaphores[i], nullptr );
-      vkDestroySemaphore( Device, ImageAvailableSemaphores[i], nullptr );
-      vkDestroyFence( Device, InFlightFences[i], nullptr );
-   }
-   vkDestroyCommandPool( Device, CommandPool, nullptr );
-   vkDestroyDevice( Device, nullptr );
-#ifdef _DEBUG
-   destroyDebugUtilsMessengerEXT( Instance, DebugMessenger, nullptr );
-#endif
-   vkDestroySurfaceKHR( Instance, Surface, nullptr );
-   vkDestroyInstance( Instance, nullptr );
-   glfwDestroyWindow( Window );
-   glfwTerminate();
-}
-
 std::vector<const char*> RendererVK::getRequiredExtensions()
 {
    uint32_t glfw_extension_count = 0;
@@ -1697,4 +1680,16 @@ void RendererVK::createInstance()
    if (vkCreateInstance( &create_info, nullptr, &Instance ) != VK_SUCCESS) {
       throw std::runtime_error("failed to create Instance!");
    }
+}
+
+void RendererVK::play()
+{
+   initializeWindow();
+   initializeVulkan();
+
+   while (!glfwWindowShouldClose( Window )) {
+      glfwPollEvents();
+      drawFrame();
+   }
+   vkDeviceWaitIdle( Device );
 }
