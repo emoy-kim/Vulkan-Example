@@ -26,14 +26,18 @@
 
 #include <FreeImage.h>
 #include <iostream>
+#include <stdexcept>
 #include <iomanip>
 #include <algorithm>
+#include <limits>
+#include <array>
 #include <vector>
 #include <string>
 #include <map>
 #include <unordered_map>
 #include <set>
 #include <unordered_set>
+#include <optional>
 #include <sstream>
 #include <fstream>
 #include <memory>

@@ -86,15 +86,15 @@
 #endif // !FREEIMAGE_[BIG|LITTLE]ENDIAN
 
 // Color-Order:
-// The specified order of color components red, green and blue affects 24-
+// The specified order of Color components red, green and blue affects 24-
 // and 32-bit images of type FIT_BITMAP as well as the colors that are part
-// of a color palette. All other images always use RGB order. By default,
-// color order is coupled to endianness:
+// of a Color palette. All other images always use RGB order. By default,
+// Color order is coupled to endianness:
 // little-endian -> BGR
 // big-endian    -> RGB
 // However, you can always define FREEIMAGE_COLORORDER to any of the known
 // orders FREEIMAGE_COLORORDER_BGR (0) and FREEIMAGE_COLORORDER_RGB (1) to
-// specify your preferred color order.
+// specify your preferred Color order.
 #define FREEIMAGE_COLORORDER_BGR    0
 #define FREEIMAGE_COLORORDER_RGB    1
 #if (!defined(FREEIMAGE_COLORORDER)) || ((FREEIMAGE_COLORORDER != FREEIMAGE_COLORORDER_BGR) && (FREEIMAGE_COLORORDER != FREEIMAGE_COLORORDER_RGB))
@@ -355,7 +355,7 @@ typedef struct tagFICOMPLEX {
 
 #define FI_RGBA_RGB_MASK		(FI_RGBA_RED_MASK|FI_RGBA_GREEN_MASK|FI_RGBA_BLUE_MASK)
 
-// The 16bit macros only include masks and shifts, since each color element is not byte aligned
+// The 16bit macros only include masks and shifts, since each Color element is not byte aligned
 
 #define FI16_555_RED_MASK		0x7C00
 #define FI16_555_GREEN_MASK		0x03E0
@@ -449,22 +449,22 @@ FI_ENUM(FREE_IMAGE_TYPE) {
 	FIT_RGBAF	= 12	//! 128-bit RGBA float image	: 4 x 32-bit IEEE floating point
 };
 
-/** Image color type used in FreeImage.
+/** Image Color type used in FreeImage.
 */
 FI_ENUM(FREE_IMAGE_COLOR_TYPE) {
 	FIC_MINISWHITE = 0,		//! min value is white
     FIC_MINISBLACK = 1,		//! min value is black
-    FIC_RGB        = 2,		//! RGB color model
-    FIC_PALETTE    = 3,		//! color map indexed
-	FIC_RGBALPHA   = 4,		//! RGB color model with alpha channel
-	FIC_CMYK       = 5		//! CMYK color model
+    FIC_RGB        = 2,		//! RGB Color Model
+    FIC_PALETTE    = 3,		//! Color map indexed
+	FIC_RGBALPHA   = 4,		//! RGB Color Model with alpha channel
+	FIC_CMYK       = 5		//! CMYK Color Model
 };
 
 /** Color quantization algorithms.
 Constants used in FreeImage_ColorQuantize.
 */
 FI_ENUM(FREE_IMAGE_QUANTIZE) {
-    FIQ_WUQUANT = 0,		//! Xiaolin Wu color quantization algorithm
+    FIQ_WUQUANT = 0,		//! Xiaolin Wu Color quantization algorithm
     FIQ_NNQUANT = 1,		//! NeuQuant neural-net quantization algorithm by Anthony Dekker
 	FIQ_LFPQUANT = 2		//! Lossless Fast Pseudo-Quantization Algorithm by Carsten Klein
 };
@@ -513,7 +513,7 @@ FI_ENUM(FREE_IMAGE_TMO) {
 Constants used in FreeImage_Rescale.
 */
 FI_ENUM(FREE_IMAGE_FILTER) {
-	FILTER_BOX		  = 0,	//! Box, pulse, Fourier window, 1st order (constant) b-spline
+	FILTER_BOX		  = 0,	//! Box, pulse, Fourier Window, 1st order (constant) b-spline
 	FILTER_BICUBIC	  = 1,	//! Mitchell & Netravali's two-param cubic filter
 	FILTER_BILINEAR   = 2,	//! Bilinear filter
 	FILTER_BSPLINE	  = 3,	//! 4th order (cubic) b-spline
@@ -522,7 +522,7 @@ FI_ENUM(FREE_IMAGE_FILTER) {
 };
 
 /** Color channels.
-Constants used in color manipulation routines.
+Constants used in Color manipulation routines.
 */
 FI_ENUM(FREE_IMAGE_COLOR_CHANNEL) {
 	FICC_RGB	= 0,	//! Use red, green and blue channels
@@ -585,7 +585,7 @@ FI_ENUM(FREE_IMAGE_MDMODEL) {
 };
 
 /**
-  Handle to a metadata model
+  Handle to a metadata Model
 */
 FI_STRUCT (FIMETADATA) { void *data; };
 
@@ -695,7 +695,7 @@ typedef void (DLL_CALLCONV *FI_InitProc)(Plugin *plugin, int format_id);
 #define EXR_LC				0x0040	//! save images with one luminance and two chroma channels, rather than as RGB (lossy compression)
 #define FAXG3_DEFAULT		0
 #define GIF_DEFAULT			0
-#define GIF_LOAD256			1		//! load the image as a 256 color image with ununsed palette entries, if it's 16 or 2 color
+#define GIF_LOAD256			1		//! load the image as a 256 Color image with ununsed palette entries, if it's 16 or 2 Color
 #define GIF_PLAYBACK		2		//! 'Play' the GIF to generate each frame (as 32bpp) instead of returning raw frame data when loading
 #define HDR_DEFAULT			0
 #define ICO_DEFAULT         0
@@ -751,7 +751,7 @@ typedef void (DLL_CALLCONV *FI_InitProc)(Plugin *plugin, int format_id);
 #define RAW_DEFAULT         0		//! load the file as linear RGB 48-bit
 #define RAW_PREVIEW			1		//! try to load the embedded JPEG preview with included Exif Data or default to RGB 24-bit
 #define RAW_DISPLAY			2		//! load the file as RGB 24-bit
-#define RAW_HALFSIZE		4		//! output a half-size color image
+#define RAW_HALFSIZE		4		//! output a half-size Color image
 #define RAW_UNPROCESSED		8		//! output a FIT_UINT16 raw Bayer image
 #define SGI_DEFAULT			0
 #define TARGA_DEFAULT       0
@@ -780,11 +780,11 @@ typedef void (DLL_CALLCONV *FI_InitProc)(Plugin *plugin, int format_id);
 // Background filling options ---------------------------------------------------------
 // Constants used in FreeImage_FillBackground and FreeImage_EnlargeCanvas
 
-#define FI_COLOR_IS_RGB_COLOR			0x00	//! RGBQUAD color is a RGB color (contains no valid alpha channel)
-#define FI_COLOR_IS_RGBA_COLOR			0x01	//! RGBQUAD color is a RGBA color (contains a valid alpha channel)
-#define FI_COLOR_FIND_EQUAL_COLOR		0x02	//! For palettized images: lookup equal RGB color from palette
-#define FI_COLOR_ALPHA_IS_INDEX			0x04	//! The color's rgbReserved member (alpha) contains the palette index to be used
-#define FI_COLOR_PALETTE_SEARCH_MASK	(FI_COLOR_FIND_EQUAL_COLOR | FI_COLOR_ALPHA_IS_INDEX)	// No color lookup is performed
+#define FI_COLOR_IS_RGB_COLOR			0x00	//! RGBQUAD Color is a RGB Color (contains no valid alpha channel)
+#define FI_COLOR_IS_RGBA_COLOR			0x01	//! RGBQUAD Color is a RGBA Color (contains a valid alpha channel)
+#define FI_COLOR_FIND_EQUAL_COLOR		0x02	//! For palettized images: lookup equal RGB Color from palette
+#define FI_COLOR_ALPHA_IS_INDEX			0x04	//! The Color's rgbReserved member (alpha) contains the palette index to be used
+#define FI_COLOR_PALETTE_SEARCH_MASK	(FI_COLOR_FIND_EQUAL_COLOR | FI_COLOR_ALPHA_IS_INDEX)	// No Color lookup is performed
 
 // RescaleEx options ---------------------------------------------------------
 // Constants used in FreeImage_RescaleEx
@@ -1130,7 +1130,7 @@ DLL_API FIBITMAP *DLL_CALLCONV FreeImage_Rescale(FIBITMAP *dib, int dst_width, i
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_MakeThumbnail(FIBITMAP *dib, int max_pixel_size, BOOL convert FI_DEFAULT(TRUE));
 DLL_API FIBITMAP *DLL_CALLCONV FreeImage_RescaleRect(FIBITMAP *dib, int dst_width, int dst_height, int left, int top, int right, int bottom, FREE_IMAGE_FILTER filter FI_DEFAULT(FILTER_CATMULLROM), unsigned flags FI_DEFAULT(0));
 
-// color manipulation routines (point operations)
+// Color manipulation routines (point operations)
 DLL_API BOOL DLL_CALLCONV FreeImage_AdjustCurve(FIBITMAP *dib, BYTE *LUT, FREE_IMAGE_COLOR_CHANNEL channel);
 DLL_API BOOL DLL_CALLCONV FreeImage_AdjustGamma(FIBITMAP *dib, double gamma);
 DLL_API BOOL DLL_CALLCONV FreeImage_AdjustBrightness(FIBITMAP *dib, double percentage);

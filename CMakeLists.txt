@@ -14,19 +14,10 @@ set(
 	SOURCE_FILES
         main.cpp
         source/renderer.cpp
-        source/game_object.cpp
-        source/vulkan_model.cpp
-        source/vulkan_device.cpp
-        source/vulkan_pipeline.cpp
-        source/vulkan_swap_chain.cpp
 )
 
 include_directories("include")
-if(MSVC)
-   include(cmake/add-libraries-windows.cmake)
-else()
-   include(cmake/add-libraries-linux.cmake)
-endif()
+include(cmake/add-libraries-linux.cmake)
 
 #if(USE_HEADLESS)
 #	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_HEADLESS_EXT")
@@ -37,11 +28,7 @@ endif()
 
 add_executable(vulkan_framework ${SOURCE_FILES})
 
-if(MSVC)
-   include(cmake/target-link-libraries-windows.cmake)
-else()
-   include(cmake/target-link-libraries-linux.cmake)
-endif()
+include(cmake/target-link-libraries-linux.cmake)
 
 target_include_directories(vulkan_framework PUBLIC ${CMAKE_BINARY_DIR})
 
