@@ -83,16 +83,15 @@ public:
       std::vector<VkPresentModeKHR> PresentModes;
    };
 
-   inline static constexpr uint32_t WIDTH = 800;
-   inline static constexpr uint32_t HEIGHT = 600;
-   inline static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-
    RendererVK();
    ~RendererVK();
 
    void play();
 
 private:
+   uint32_t FrameWidth;
+   uint32_t FrameHeight;
+   int MaxFramesInFlight;
    GLFWwindow* Window;
    VkInstance Instance;
    VkSurfaceKHR Surface;
