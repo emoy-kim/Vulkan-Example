@@ -15,6 +15,7 @@ set(
         main.cpp
         source/common.cpp
         source/object.cpp
+        source/shader.cpp
         source/renderer.cpp
 )
 

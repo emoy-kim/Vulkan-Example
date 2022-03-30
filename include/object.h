@@ -2,10 +2,10 @@
 
 #include "common.h"
 
-class ObjectVK
+class ObjectVK final
 {
 public:
-   ObjectVK(CommonVK* common);
+   explicit ObjectVK(CommonVK* common);
    ~ObjectVK();
 
    void setSquareObject(const std::string& texture_file_path);

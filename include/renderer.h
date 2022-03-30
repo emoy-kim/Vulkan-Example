@@ -1,6 +1,7 @@
 #pragma once
 
 #include "object.h"
+#include "shader.h"
 
 struct UniformBufferObject
 {
@@ -31,17 +32,11 @@ private:
    VkExtent2D SwapChainExtent;
    std::vector<VkImageView> SwapChainImageViews;
    std::vector<VkFramebuffer> SwapChainFramebuffers;
-   VkRenderPass RenderPass;
-   VkDescriptorSetLayout DescriptorSetLayout;
-   VkPipelineLayout PipelineLayout;
-   VkPipeline GraphicsPipeline;
    VkImage DepthImage;
    VkDeviceMemory DepthImageMemory;
    VkImageView DepthImageView;
    VkBuffer VertexBuffer;
    VkDeviceMemory VertexBufferMemory;
-   VkBuffer IndexBuffer;
-   VkDeviceMemory IndexBufferMemory;
    std::vector<VkBuffer> UniformBuffers;
    std::vector<VkDeviceMemory> UniformBuffersMemory;
    VkDescriptorPool DescriptorPool;
@@ -53,6 +48,7 @@ private:
    uint32_t CurrentFrame;
    bool FramebufferResized;
    std::shared_ptr<ObjectVK> SquareObject;
+   std::shared_ptr<ShaderVK> Shader;
 
 #ifdef NDEBUG
    inline static constexpr bool EnableValidationLayers = false;
@@ -114,11 +110,7 @@ private:
    [[nodiscard]] VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
    void createSwapChain();
    void createImageViews();
-   void createRenderPass();
    void createObject();
-   void createDescriptorSetLayout();
-   [[nodiscard]] static std::vector<char> readFile(const std::string& filename);
-   [[nodiscard]] static VkShaderModule createShaderModule(const std::vector<char>& code);
    void createGraphicsPipeline();
    void createDepthResources();
    void createFramebuffers();
