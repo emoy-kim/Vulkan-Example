@@ -13,6 +13,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(
 	SOURCE_FILES
         main.cpp
+        source/common.cpp
+        source/object.cpp
         source/renderer.cpp
 )
 
