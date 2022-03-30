@@ -255,7 +255,7 @@ void ObjectVK::createTextureSampler()
 void ObjectVK::setSquareObject(const std::string& texture_file_path)
 {
    getSquareObject( Vertices );
-   createTextureImage( "../emoy.png" );
+   createTextureImage( std::filesystem::path(CMAKE_SOURCE_DIR) / "emoy.png" );
    createTextureImageView();
    createTextureSampler();
 }

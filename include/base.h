@@ -40,8 +40,10 @@
 #include <optional>
 #include <sstream>
 #include <fstream>
+#include <filesystem>
 #include <memory>
 #include <chrono>
 
-using uchar = unsigned char;
+#include "project_constants.h"
+
 using uint = unsigned int;

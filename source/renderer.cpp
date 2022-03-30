@@ -253,8 +253,8 @@ void RendererVK::createGraphicsPipeline()
    Shader->createRenderPass( SwapChainImageFormat );
    Shader->createDescriptorSetLayout();
    Shader->createGraphicsPipeline(
-      "../shaders/shader.vert.spv",
-      "../shaders/shader.frag.spv",
+      std::filesystem::path(CMAKE_SOURCE_DIR) / "shaders/shader.vert.spv",
+      std::filesystem::path(CMAKE_SOURCE_DIR) / "shaders/shader.frag.spv",
       ObjectVK::getBindingDescription(),
       ObjectVK::getAttributeDescriptions(),
       { FrameWidth, FrameHeight }

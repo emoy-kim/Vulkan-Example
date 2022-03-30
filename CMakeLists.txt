@@ -8,8 +8,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -D_DEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -D_RELEASE")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-
 set(
 	SOURCE_FILES
         main.cpp
@@ -34,6 +32,8 @@ add_executable(vulkan_framework ${SOURCE_FILES})
 include(cmake/target-link-libraries-linux.cmake)
 
 target_include_directories(vulkan_framework PUBLIC ${CMAKE_BINARY_DIR})
+
+configure_file(include/project_constants.h.in ${PROJECT_BINARY_DIR}/project_constants.h @ONLY)
 
 
 #==============================================================================
