@@ -1,11 +1,11 @@
 #version 460
 
-layout(binding = 0) uniform UniformBufferObject
+layout(binding = 0) uniform MVP
 {
-    mat4 model;
-    mat4 view;
-    mat4 proj;
-} ubo;
+    mat4 WorldMatrix;
+    mat4 ViewMatrix;
+    mat4 ProjectionMatrix;
+};
 
 layout(location = 0) in vec3 v_position;
 layout(location = 1) in vec3 v_normal;
@@ -17,5 +17,5 @@ void main()
 {
     tex_coord = v_tex_coord;
 
-    gl_Position = ubo.proj * ubo.view * ubo.model * vec4(v_position, 1.0);
+    gl_Position = ProjectionMatrix * ViewMatrix * WorldMatrix * vec4(v_position, 1.0);
 }
