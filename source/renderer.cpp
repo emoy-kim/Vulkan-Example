@@ -662,9 +662,9 @@ void RendererVK::createInstance()
    VkApplicationInfo application_info{};
    application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
    application_info.pApplicationName = "Hello Vulkan";
-   application_info.applicationVersion = VK_MAKE_VERSION( 1, 0, 0);
+   application_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
    application_info.pEngineName = "No Engine";
-   application_info.engineVersion = VK_MAKE_VERSION( 1, 0, 0);
+   application_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
    application_info.apiVersion = VK_API_VERSION_1_0;
 
    VkInstanceCreateInfo create_info{};
