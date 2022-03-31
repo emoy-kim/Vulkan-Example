@@ -34,11 +34,26 @@ private:
          Position( position ), Normal( normal ), Texture( texture ) {}
    };
 
-   struct UniformBufferObject
+   struct UniformBuffer
+   {
+      std::vector<VkBuffer> UniformBuffers;
+      std::vector<VkDeviceMemory> UniformBuffersMemory;
+   };
+
+   struct MVPUniformBufferObject
    {
        alignas(16) glm::mat4 Model;
        alignas(16) glm::mat4 View;
        alignas(16) glm::mat4 Projection;
+   };
+
+   struct MaterialUniformBufferObject
+   {
+      alignas(4) glm::vec4 EmissionColor;
+      alignas(4) glm::vec4 AmbientColor;
+      alignas(4) glm::vec4 DiffuseColor;
+      alignas(4) glm::vec4 SpecularColor;
+      alignas(4) float SpecularExponent;
    };
 
    CommonVK* Common;
@@ -48,15 +63,15 @@ private:
    VkImageView TextureImageView;
    VkSampler TextureSampler;
    VkDescriptorPool DescriptorPool;
-   std::vector<VkBuffer> UniformBuffers;
-   std::vector<VkDeviceMemory> UniformBuffersMemory;
+   UniformBuffer MVP;
+   UniformBuffer Material;
    std::vector<VkDescriptorSet> DescriptorSets;
 
    static void getSquareObject(std::vector<Vertex>& vertices);
    [[nodiscard]] static VkCommandBuffer beginSingleTimeCommands();
    static void endSingleTimeCommands(VkCommandBuffer command_buffer);
-   void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout);
-   void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+   static void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout old_layout, VkImageLayout new_layout);
+   static void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
    void createTextureImage(const std::string& texture_file_path);
    void createTextureImageView();
    void createTextureSampler();
