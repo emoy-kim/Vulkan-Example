@@ -3,13 +3,6 @@
 #include "object.h"
 #include "shader.h"
 
-struct UniformBufferObject
-{
-    alignas(16) glm::mat4 Model;
-    alignas(16) glm::mat4 View;
-    alignas(16) glm::mat4 Projection;
-};
-
 class RendererVK final
 {
 public:
@@ -21,7 +14,6 @@ public:
 private:
    uint32_t FrameWidth;
    uint32_t FrameHeight;
-   int MaxFramesInFlight;
    std::shared_ptr<CommonVK> Common;
    GLFWwindow* Window;
    VkInstance Instance;
@@ -37,17 +29,14 @@ private:
    VkImageView DepthImageView;
    VkBuffer VertexBuffer;
    VkDeviceMemory VertexBufferMemory;
-   std::vector<VkBuffer> UniformBuffers;
-   std::vector<VkDeviceMemory> UniformBuffersMemory;
-   VkDescriptorPool DescriptorPool;
-   std::vector<VkDescriptorSet> DescriptorSets;
    std::vector<VkCommandBuffer> CommandBuffers;
    std::vector<VkSemaphore> ImageAvailableSemaphores;
    std::vector<VkSemaphore> RenderFinishedSemaphores;
    std::vector<VkFence> InFlightFences;
    uint32_t CurrentFrame;
    bool FramebufferResized;
-   std::shared_ptr<ObjectVK> SquareObject;
+   std::shared_ptr<ObjectVK> UpperSquareObject;
+   std::shared_ptr<ObjectVK> LowerSquareObject;
    std::shared_ptr<ShaderVK> Shader;
 
 #ifdef NDEBUG
@@ -116,15 +105,11 @@ private:
    void createFramebuffers();
    static void copyBuffer(VkBuffer src_buffer, VkBuffer dst_buffer, VkDeviceSize size);
    void createVertexBuffer();
-   void createUniformBuffers();
-   void createDescriptorPool();
-   void createDescriptorSets();
    void createCommandBuffer();
    void createSyncObjects();
    void initializeVulkan();
    void recordCommandBuffer(VkCommandBuffer command_buffer, uint32_t image_index);
    void recreateSwapChain();
-   void updateUniformBuffer(uint32_t current_image);
    void drawFrame();
    [[nodiscard]] static std::vector<const char*> getRequiredExtensions();
    void createInstance();

@@ -25,6 +25,7 @@ public:
 
    [[nodiscard]] static uint32_t getValidationLayerSize() { return static_cast<uint32_t>(ValidationLayers.size()); }
    [[nodiscard]] static const char* const* getValidationLayerNames() { return ValidationLayers.data(); }
+   [[nodiscard]] static int getMaxFramesInFlight() { return MaxFramesInFlight; }
    [[nodiscard]] static VkPhysicalDevice getPhysicalDevice() { return PhysicalDevice; }
    [[nodiscard]] static VkDevice getDevice() { return Device; }
    [[nodiscard]] static VkQueue getGraphicsQueue() { return GraphicsQueue; }
@@ -74,6 +75,7 @@ private:
    inline static const std::array<const char*, 1> DeviceExtensions = {
       VK_KHR_SWAPCHAIN_EXTENSION_NAME
    };
+   inline static int MaxFramesInFlight = 2;
    inline static VkPhysicalDevice PhysicalDevice = VK_NULL_HANDLE;
    inline static VkDevice Device{};
    inline static VkQueue GraphicsQueue{};

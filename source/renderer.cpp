@@ -1,10 +1,9 @@
 #include "renderer.h"
 
 RendererVK::RendererVK() :
-   FrameWidth( 800 ), FrameHeight( 600 ), MaxFramesInFlight( 2 ), Common( std::make_shared<CommonVK>() ),
-   Window( nullptr ), Instance{}, Surface{}, SwapChain{}, SwapChainImageFormat{}, SwapChainExtent{}, DepthImage{},
-   DepthImageMemory{}, DepthImageView{}, VertexBuffer{}, VertexBufferMemory{}, DescriptorPool{}, CurrentFrame( 0 ),
-   FramebufferResized( false )
+   FrameWidth( 800 ), FrameHeight( 600 ), Common( std::make_shared<CommonVK>() ), Window( nullptr ), Instance{},
+   Surface{}, SwapChain{}, SwapChainImageFormat{}, SwapChainExtent{}, DepthImage{}, DepthImageMemory{},
+   DepthImageView{}, VertexBuffer{}, VertexBufferMemory{}, CurrentFrame( 0 ), FramebufferResized( false )
 {
 }
 
@@ -12,14 +11,9 @@ RendererVK::~RendererVK()
 {
    VkDevice device = CommonVK::getDevice();
    cleanupSwapChain();
-   for (size_t i = 0; i < MaxFramesInFlight; ++i) {
-      vkDestroyBuffer( device, UniformBuffers[i], nullptr );
-      vkFreeMemory( device, UniformBuffersMemory[i], nullptr );
-   }
-   vkDestroyDescriptorPool( device, DescriptorPool, nullptr );
    vkDestroyBuffer( device, VertexBuffer, nullptr );
    vkFreeMemory( device, VertexBufferMemory, nullptr );
-   for (size_t i = 0; i < MaxFramesInFlight; i++) {
+   for (size_t i = 0; i < CommonVK::getMaxFramesInFlight(); i++) {
       vkDestroySemaphore( device, RenderFinishedSemaphores[i], nullptr );
       vkDestroySemaphore( device, ImageAvailableSemaphores[i], nullptr );
       vkDestroyFence( device, InFlightFences[i], nullptr );
@@ -37,7 +31,8 @@ RendererVK::~RendererVK()
 
 void RendererVK::cleanupSwapChain()
 {
-   SquareObject.reset();
+   UpperSquareObject.reset();
+   LowerSquareObject.reset();
    Shader.reset();
 
    VkDevice device = CommonVK::getDevice();
@@ -243,8 +238,17 @@ void RendererVK::createImageViews()
 
 void RendererVK::createObject()
 {
-   SquareObject = std::make_shared<ObjectVK>( Common.get() );
-   SquareObject->setSquareObject( "../emoy.png" );
+   UpperSquareObject = std::make_shared<ObjectVK>( Common.get() );
+   UpperSquareObject->setSquareObject( "../emoy.png" );
+   UpperSquareObject->createDescriptorPool();
+   UpperSquareObject->createUniformBuffers();
+   UpperSquareObject->createDescriptorSets( Shader->getDescriptorSetLayout() );
+
+   LowerSquareObject = std::make_shared<ObjectVK>( Common.get() );
+   LowerSquareObject->setSquareObject( "../emoy.png" );
+   LowerSquareObject->createDescriptorPool();
+   LowerSquareObject->createUniformBuffers();
+   LowerSquareObject->createDescriptorSets( Shader->getDescriptorSetLayout() );
 }
 
 void RendererVK::createGraphicsPipeline()
@@ -349,7 +353,7 @@ void RendererVK::createVertexBuffer()
 {
    VkBuffer staging_buffer;
    VkDeviceMemory staging_buffer_memory;
-   const VkDeviceSize buffer_size = SquareObject->getVertexBufferSize();
+   const VkDeviceSize buffer_size = LowerSquareObject->getVertexBufferSize();
    CommonVK::createBuffer(
       buffer_size,
       VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
@@ -364,7 +368,7 @@ void RendererVK::createVertexBuffer()
       staging_buffer_memory,
       0, buffer_size, 0, &data
    );
-      memcpy( data, SquareObject->getVertexData(), static_cast<size_t>(buffer_size) );
+      memcpy( data, LowerSquareObject->getVertexData(), static_cast<size_t>(buffer_size) );
    vkUnmapMemory( CommonVK::getDevice(), staging_buffer_memory );
 
    CommonVK::createBuffer(
@@ -380,103 +384,9 @@ void RendererVK::createVertexBuffer()
    vkFreeMemory( CommonVK::getDevice(), staging_buffer_memory, nullptr );
 }
 
-void RendererVK::createUniformBuffers()
-{
-   VkDeviceSize buffer_size = sizeof(UniformBufferObject);
-   UniformBuffers.resize( MaxFramesInFlight );
-   UniformBuffersMemory.resize( MaxFramesInFlight );
-   for (size_t i = 0; i < MaxFramesInFlight; ++i) {
-      CommonVK::createBuffer(
-         buffer_size,
-         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-         UniformBuffers[i],
-         UniformBuffersMemory[i]
-      );
-   }
-}
-
-void RendererVK::createDescriptorPool()
-{
-   std::array<VkDescriptorPoolSize, 2> pool_sizes{};
-   pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-   pool_sizes[0].descriptorCount = static_cast<uint32_t>(MaxFramesInFlight);
-   pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-   pool_sizes[1].descriptorCount = static_cast<uint32_t>(MaxFramesInFlight);
-
-   VkDescriptorPoolCreateInfo pool_info{};
-   pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-   pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
-   pool_info.pPoolSizes = pool_sizes.data();
-   pool_info.maxSets = static_cast<uint32_t>(MaxFramesInFlight);
-
-   const VkResult result = vkCreateDescriptorPool(
-      CommonVK::getDevice(),
-      &pool_info,
-      nullptr,
-      &DescriptorPool
-   );
-   if (result != VK_SUCCESS) throw std::runtime_error("failed to create descriptor pool!");
-}
-
-void RendererVK::createDescriptorSets()
-{
-   std::vector<VkDescriptorSetLayout> layouts( MaxFramesInFlight, Shader->getDescriptorSetLayout());
-   VkDescriptorSetAllocateInfo allocate_info{};
-   allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-   allocate_info.descriptorPool = DescriptorPool;
-   allocate_info.descriptorSetCount = static_cast<uint32_t>(MaxFramesInFlight);
-   allocate_info.pSetLayouts = layouts.data();
-
-   DescriptorSets.resize( MaxFramesInFlight );
-   const VkResult result = vkAllocateDescriptorSets(
-      CommonVK::getDevice(),
-      &allocate_info,
-      DescriptorSets.data()
-   );
-   if (result != VK_SUCCESS) throw std::runtime_error("failed to allocate descriptor sets!");
-
-   for (size_t i = 0; i < MaxFramesInFlight; ++i) {
-      VkDescriptorBufferInfo buffer_info{};
-      buffer_info.buffer = UniformBuffers[i];
-      buffer_info.offset = 0;
-      buffer_info.range = sizeof( UniformBufferObject );
-
-      VkDescriptorImageInfo image_info{};
-      image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-      image_info.imageView = SquareObject->getTextureImageView();
-      image_info.sampler = SquareObject->getTextureSampler();
-
-      std::array<VkWriteDescriptorSet, 2> descriptor_writes{};
-      descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-      descriptor_writes[0].dstSet = DescriptorSets[i];
-      descriptor_writes[0].dstBinding = 0;
-      descriptor_writes[0].dstArrayElement = 0;
-      descriptor_writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-      descriptor_writes[0].descriptorCount = 1;
-      descriptor_writes[0].pBufferInfo = &buffer_info;
-
-      descriptor_writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-      descriptor_writes[1].dstSet = DescriptorSets[i];
-      descriptor_writes[1].dstBinding = 1;
-      descriptor_writes[1].dstArrayElement = 0;
-      descriptor_writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-      descriptor_writes[1].descriptorCount = 1;
-      descriptor_writes[1].pImageInfo = &image_info;
-
-      vkUpdateDescriptorSets(
-         CommonVK::getDevice(),
-         static_cast<uint32_t>(descriptor_writes.size()),
-         descriptor_writes.data(),
-         0,
-         nullptr
-      );
-   }
-}
-
 void RendererVK::createCommandBuffer()
 {
-   CommandBuffers.resize( MaxFramesInFlight );
+   CommandBuffers.resize( CommonVK::getMaxFramesInFlight() );
 
    VkCommandBufferAllocateInfo allocate_info{};
    allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -494,9 +404,10 @@ void RendererVK::createCommandBuffer()
 
 void RendererVK::createSyncObjects()
 {
-   ImageAvailableSemaphores.resize( MaxFramesInFlight );
-   RenderFinishedSemaphores.resize( MaxFramesInFlight );
-   InFlightFences.resize( MaxFramesInFlight );
+   const int max_frames_in_fligh = CommonVK::getMaxFramesInFlight();
+   ImageAvailableSemaphores.resize( max_frames_in_fligh );
+   RenderFinishedSemaphores.resize( max_frames_in_fligh );
+   InFlightFences.resize( max_frames_in_fligh );
 
    VkSemaphoreCreateInfo semaphore_info{};
    semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -505,7 +416,7 @@ void RendererVK::createSyncObjects()
    fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
    fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-   for (size_t i = 0; i < MaxFramesInFlight; ++i) {
+   for (size_t i = 0; i < max_frames_in_fligh; ++i) {
       const VkResult image_available_semaphore_result = vkCreateSemaphore(
          CommonVK::getDevice(),
          &semaphore_info,
@@ -546,13 +457,10 @@ void RendererVK::initializeVulkan()
    createSwapChain();
    createImageViews();
    createGraphicsPipeline();
+   createObject();
    createDepthResources();
    createFramebuffers();
-   createObject();
    createVertexBuffer();
-   createUniformBuffers();
-   createDescriptorPool();
-   createDescriptorSets();
    createCommandBuffer();
    createSyncObjects();
 }
@@ -595,15 +503,30 @@ void RendererVK::recordCommandBuffer(VkCommandBuffer command_buffer, uint32_t im
          command_buffer, 0, 1,
          vertex_buffers.data(), offsets.data()
       );
+
       vkCmdBindDescriptorSets(
          command_buffer,
          VK_PIPELINE_BIND_POINT_GRAPHICS,
          Shader->getPipelineLayout(),
-         0, 1, &DescriptorSets[CurrentFrame],
+         0, 1,
+         LowerSquareObject->getDescriptorSet( CurrentFrame ),
          0, nullptr
       );
       vkCmdDraw(
-         command_buffer, SquareObject->getVertexSize(),
+         command_buffer, LowerSquareObject->getVertexSize(),
+         1, 0, 0
+      );
+
+      vkCmdBindDescriptorSets(
+         command_buffer,
+         VK_PIPELINE_BIND_POINT_GRAPHICS,
+         Shader->getPipelineLayout(),
+         0, 1,
+         UpperSquareObject->getDescriptorSet( CurrentFrame ),
+         0, nullptr
+      );
+      vkCmdDraw(
+         command_buffer, UpperSquareObject->getVertexSize(),
          1, 0, 0
       );
    vkCmdEndRenderPass( command_buffer );
@@ -629,45 +552,6 @@ void RendererVK::recreateSwapChain()
    createGraphicsPipeline();
    createDepthResources();
    createFramebuffers();
-}
-
-void RendererVK::updateUniformBuffer(uint32_t current_image)
-{
-   static auto start_time = std::chrono::high_resolution_clock::now();
-   auto current_time = std::chrono::high_resolution_clock::now();
-   float time = std::chrono::duration<float, std::chrono::seconds::period>( current_time - start_time).count();
-
-   UniformBufferObject ubo{};
-   ubo.Model = glm::rotate(
-      glm::mat4(1.0f),
-      time * glm::radians( 90.0f ),
-      glm::vec3(0.0f, 0.0f, 1.0f)
-   );
-   ubo.View = glm::lookAt(
-      glm::vec3(2.0f, 2.0f, 2.0f),
-      glm::vec3(0.0f, 0.0f, 0.0f),
-      glm::vec3(0.0f, 0.0f, 1.0f)
-   );
-   ubo.Projection = glm::perspective(
-      glm::radians( 45.0f ),
-      static_cast<float>(SwapChainExtent.width) / static_cast<float>(SwapChainExtent.height),
-      0.1f,
-      10.0f
-   );
-
-   // glm was originally designed for OpenGL, where the y-coordinate of the clip coordinates is inverted.
-   // The easiest way to compensate for that is to flip the sign on the scaling factor of the y-axis in the projection
-   // matrix. If you do not do this, then the image will be rendered upside down.
-   ubo.Projection[1][1] *= -1;
-
-   void* data;
-   vkMapMemory(
-      CommonVK::getDevice(),
-      UniformBuffersMemory[current_image],
-      0, sizeof(ubo), 0, &data
-   );
-      memcpy( data, &ubo, sizeof( ubo ) );
-   vkUnmapMemory( CommonVK::getDevice(), UniformBuffersMemory[current_image] );
 }
 
 void RendererVK::drawFrame()
@@ -697,7 +581,18 @@ void RendererVK::drawFrame()
       throw std::runtime_error("failed to acquire swap chain image!");
    }
 
-   updateUniformBuffer( CurrentFrame );
+   static auto start_time = std::chrono::high_resolution_clock::now();
+   auto current_time = std::chrono::high_resolution_clock::now();
+   float time = std::chrono::duration<float, std::chrono::seconds::period>( current_time - start_time).count();
+   const glm::mat4 lower_world = glm::rotate(
+      glm::mat4(1.0f),
+      time * glm::radians( 90.0f ),
+      glm::vec3(0.0f, 0.0f, 1.0f)
+   );
+   const glm::mat4 upper_world =
+      glm::translate( glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f) ) * lower_world;
+   LowerSquareObject->updateUniformBuffer( CurrentFrame, SwapChainExtent, lower_world );
+   UpperSquareObject->updateUniformBuffer( CurrentFrame, SwapChainExtent, upper_world );
 
    vkResetFences( CommonVK::getDevice(), 1, &InFlightFences[CurrentFrame] );
    vkResetCommandBuffer( CommandBuffers[CurrentFrame], 0 );
@@ -742,7 +637,7 @@ void RendererVK::drawFrame()
    }
    else if (result != VK_SUCCESS) throw std::runtime_error("failed to present swap chain image!");
 
-   CurrentFrame = (CurrentFrame + 1) % MaxFramesInFlight;
+   CurrentFrame = (CurrentFrame + 1) % CommonVK::getMaxFramesInFlight();
 }
 
 std::vector<const char*> RendererVK::getRequiredExtensions()
