@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 RendererVK::RendererVK() :
-   FrameWidth( 800 ), FrameHeight( 600 ), Common( std::make_shared<CommonVK>() ), Window( nullptr ), Instance{},
+   FrameWidth( 1280 ), FrameHeight( 720 ), Common( std::make_shared<CommonVK>() ), Window( nullptr ), Instance{},
    Surface{}, SwapChain{}, SwapChainImageFormat{}, SwapChainExtent{}, DepthImage{}, DepthImageMemory{},
    DepthImageView{}, VertexBuffer{}, VertexBufferMemory{}, CurrentFrame( 0 ), FramebufferResized( false )
 {
@@ -482,7 +482,7 @@ void RendererVK::recordCommandBuffer(VkCommandBuffer command_buffer, uint32_t im
    render_pass_info.renderArea.extent = SwapChainExtent;
 
    std::array<VkClearValue, 2> clear_values{};
-   clear_values[0].color = { { 0.0f, 0.0f, 0.0f, 1.0f } };
+   clear_values[0].color = { { 0.35f, 0.0f, 0.53f, 1.0f } };
    clear_values[1].depthStencil = { 1.0f, 0 };
    render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
    render_pass_info.pClearValues = clear_values.data();
@@ -584,13 +584,16 @@ void RendererVK::drawFrame()
    static auto start_time = std::chrono::high_resolution_clock::now();
    auto current_time = std::chrono::high_resolution_clock::now();
    float time = std::chrono::duration<float, std::chrono::seconds::period>( current_time - start_time).count();
-   const glm::mat4 lower_world = glm::rotate(
-      glm::mat4(1.0f),
-      time * glm::radians( 90.0f ),
-      glm::vec3(0.0f, 0.0f, 1.0f)
-   );
+   const glm::mat4 lower_world =
+      glm::translate( glm::mat4(1.0f), glm::vec3(-0.25f, 0.0f, 0.0f) ) *
+      glm::rotate(
+         glm::mat4(1.0f),
+         time * glm::radians( 90.0f ),
+         glm::vec3(0.0f, 1.0f, 0.0f)
+      ) *
+      glm::translate( glm::mat4(1.0f), glm::vec3(-0.5f, -0.5f, 0.0f) );
    const glm::mat4 upper_world =
-      glm::translate( glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f) ) * lower_world;
+      glm::translate( glm::mat4(1.0f), glm::vec3(0.5f, 0.0f, 0.0f) ) * lower_world;
    LowerSquareObject->updateUniformBuffer( CurrentFrame, SwapChainExtent, lower_world );
    UpperSquareObject->updateUniformBuffer( CurrentFrame, SwapChainExtent, upper_world );
 
