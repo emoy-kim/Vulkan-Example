@@ -49,23 +49,23 @@ private:
 
    struct MaterialUniformBufferObject
    {
-      alignas(4) glm::vec4 EmissionColor;
-      alignas(4) glm::vec4 AmbientColor;
-      alignas(4) glm::vec4 DiffuseColor;
-      alignas(4) glm::vec4 SpecularColor;
-      alignas(4) float SpecularExponent;
+      alignas(16) glm::vec4 EmissionColor;
+      alignas(16) glm::vec4 AmbientColor;
+      alignas(16) glm::vec4 DiffuseColor;
+      alignas(16) glm::vec4 SpecularColor;
+      alignas(16) float SpecularExponent;
    };
 
    struct LightUniformBufferObject
    {
-      alignas(4) glm::vec4 Position;
-      alignas(4) glm::vec4 AmbientColor;
-      alignas(4) glm::vec4 DiffuseColor;
-      alignas(4) glm::vec4 SpecularColor;
-      alignas(4) glm::vec3 AttenuationFactors;
-      alignas(4) glm::vec3 SpotlightDirection;
-      alignas(4) float SpotlightExponent;
-      alignas(4) float SpotlightCutoffAngle;
+      alignas(16) glm::vec4 Position;
+      alignas(16) glm::vec4 AmbientColor;
+      alignas(16) glm::vec4 DiffuseColor;
+      alignas(16) glm::vec4 SpecularColor;
+      alignas(16) glm::vec3 AttenuationFactors;
+      alignas(16) glm::vec3 SpotlightDirection;
+      alignas(16) float SpotlightExponent;
+      alignas(16) float SpotlightCutoffAngle;
    };
 
    CommonVK* Common;
