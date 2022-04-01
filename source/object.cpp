@@ -455,9 +455,9 @@ void ObjectVK::updateUniformBuffer(uint32_t current_image, VkExtent2D extent, co
    MVPUniformBufferObject mvp{};
    mvp.Model = to_world;
    mvp.View = glm::lookAt(
-      glm::vec3(2.0f, 2.0f, 2.0f),
+      glm::vec3(0.0f, 0.0f, -2.0f),
       glm::vec3(0.0f, 0.0f, 0.0f),
-      glm::vec3(0.0f, 0.0f, 1.0f)
+      glm::vec3(0.0f, 1.0f, 0.0f)
    );
    mvp.Projection = glm::perspective(
       glm::radians( 45.0f ),
@@ -472,21 +472,21 @@ void ObjectVK::updateUniformBuffer(uint32_t current_image, VkExtent2D extent, co
    mvp.Projection[1][1] *= -1;
 
    MaterialUniformBufferObject material{};
-   material.EmissionColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-   material.AmbientColor = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
+   material.EmissionColor = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
+   material.AmbientColor = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
    material.DiffuseColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-   material.SpecularColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-   material.SpecularExponent = 0.0f;
+   material.SpecularColor = glm::vec4(1.0f, 1.0f, 0.77f, 1.0f);
+   material.SpecularExponent = 2.0f;
 
    LightUniformBufferObject light{};
-   light.Position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-   light.AmbientColor = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
-   light.DiffuseColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
+   light.Position = glm::vec4(0.5f, 0.5f, 2.5f, 0.0f);
+   light.AmbientColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+   light.DiffuseColor = glm::vec4(1.0f, 1.0f, 0.77f, 1.0f);
    light.SpecularColor = glm::vec4(0.9f, 0.9f, 0.9f, 1.0f);
-   light.AttenuationFactors = glm::vec3(1.0f, 0.0f, 0.0f);
-   light.SpotlightDirection = glm::vec3(0.0f, 0.0f, -1.0f);
-   light.SpotlightExponent = 0.0f;
-   light.SpotlightCutoffAngle = 180.0f;
+   light.AttenuationFactors = glm::vec3(1.0f, 1.0f, 1.0f);
+   light.SpotlightDirection = glm::vec3(0.0f, 0.0f, -2.0f);
+   light.SpotlightExponent = 32.0f;
+   light.SpotlightCutoffAngle = 45.0f;
 
    void* mvp_data;
    vkMapMemory(
