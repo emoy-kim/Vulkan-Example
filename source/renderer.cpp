@@ -239,13 +239,13 @@ void RendererVK::createImageViews()
 void RendererVK::createObject()
 {
    UpperSquareObject = std::make_shared<ObjectVK>( Common.get() );
-   UpperSquareObject->setSquareObject( "../emoy.png" );
+   UpperSquareObject->setSquareObject( std::filesystem::path(CMAKE_SOURCE_DIR) / "emoy.png" );
    UpperSquareObject->createDescriptorPool();
    UpperSquareObject->createUniformBuffers();
    UpperSquareObject->createDescriptorSets( Shader->getDescriptorSetLayout() );
 
    LowerSquareObject = std::make_shared<ObjectVK>( Common.get() );
-   LowerSquareObject->setSquareObject( "../emoy.png" );
+   LowerSquareObject->setSquareObject( std::filesystem::path(CMAKE_SOURCE_DIR) / "emoy.png" );
    LowerSquareObject->createDescriptorPool();
    LowerSquareObject->createUniformBuffers();
    LowerSquareObject->createDescriptorSets( Shader->getDescriptorSetLayout() );

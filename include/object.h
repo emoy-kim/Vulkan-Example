@@ -56,6 +56,18 @@ private:
       alignas(4) float SpecularExponent;
    };
 
+   struct LightUniformBufferObject
+   {
+      alignas(4) glm::vec4 Position;
+      alignas(4) glm::vec4 AmbientColor;
+      alignas(4) glm::vec4 DiffuseColor;
+      alignas(4) glm::vec4 SpecularColor;
+      alignas(4) glm::vec3 AttenuationFactors;
+      alignas(4) glm::vec3 SpotlightDirection;
+      alignas(4) float SpotlightExponent;
+      alignas(4) float SpotlightCutoffAngle;
+   };
+
    CommonVK* Common;
    std::vector<Vertex> Vertices;
    VkImage TextureImage;
@@ -65,6 +77,7 @@ private:
    VkDescriptorPool DescriptorPool;
    UniformBuffer MVP;
    UniformBuffer Material;
+   UniformBuffer Light;
    std::vector<VkDescriptorSet> DescriptorSets;
 
    static void getSquareObject(std::vector<Vertex>& vertices);

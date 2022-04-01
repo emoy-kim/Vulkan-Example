@@ -84,7 +84,7 @@ void ShaderVK::createDescriptorSetLayout()
    mvp_ubo_layout_binding.descriptorCount = 1;
    mvp_ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
    mvp_ubo_layout_binding.pImmutableSamplers = nullptr;
-   mvp_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+   mvp_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
    VkDescriptorSetLayoutBinding sampler_layout_binding{};
    sampler_layout_binding.binding = 1;
@@ -100,10 +100,18 @@ void ShaderVK::createDescriptorSetLayout()
    material_ubo_layout_binding.pImmutableSamplers = nullptr;
    material_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-   std::array<VkDescriptorSetLayoutBinding, 3> bindings = {
+   VkDescriptorSetLayoutBinding light_ubo_layout_binding{};
+   light_ubo_layout_binding.binding = 3;
+   light_ubo_layout_binding.descriptorCount = 1;
+   light_ubo_layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+   light_ubo_layout_binding.pImmutableSamplers = nullptr;
+   light_ubo_layout_binding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+   std::array<VkDescriptorSetLayoutBinding, 4> bindings = {
       mvp_ubo_layout_binding,
       sampler_layout_binding,
-      material_ubo_layout_binding
+      material_ubo_layout_binding,
+      light_ubo_layout_binding
    };
    VkDescriptorSetLayoutCreateInfo layoutInfo{};
    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

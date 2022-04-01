@@ -15,6 +15,9 @@ ObjectVK::~ObjectVK()
 
       vkDestroyBuffer( device, Material.UniformBuffers[i], nullptr );
       vkFreeMemory( device, Material.UniformBuffersMemory[i], nullptr );
+
+      vkDestroyBuffer( device, Light.UniformBuffers[i], nullptr );
+      vkFreeMemory( device, Light.UniformBuffersMemory[i], nullptr );
    }
    vkDestroySampler( device, TextureSampler, nullptr );
    vkDestroyImageView( device, TextureImageView, nullptr );
@@ -263,7 +266,7 @@ void ObjectVK::createTextureSampler()
 void ObjectVK::setSquareObject(const std::string& texture_file_path)
 {
    getSquareObject( Vertices );
-   createTextureImage( std::filesystem::path(CMAKE_SOURCE_DIR) / "emoy.png" );
+   createTextureImage( texture_file_path );
    createTextureImageView();
    createTextureSampler();
 }
@@ -300,19 +303,22 @@ std::array<VkVertexInputAttributeDescription, 3> ObjectVK::getAttributeDescripti
 
  void ObjectVK::createDescriptorPool()
 {
-   std::array<VkDescriptorPoolSize, 3> pool_sizes{};
+   const int max_frames_in_flight = CommonVK::getMaxFramesInFlight();
+   std::array<VkDescriptorPoolSize, 4> pool_sizes{};
    pool_sizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-   pool_sizes[0].descriptorCount = static_cast<uint32_t>(CommonVK::getMaxFramesInFlight());
+   pool_sizes[0].descriptorCount = static_cast<uint32_t>(max_frames_in_flight);
    pool_sizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-   pool_sizes[1].descriptorCount = static_cast<uint32_t>(CommonVK::getMaxFramesInFlight());
+   pool_sizes[1].descriptorCount = static_cast<uint32_t>(max_frames_in_flight);
    pool_sizes[2].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-   pool_sizes[2].descriptorCount = static_cast<uint32_t>(CommonVK::getMaxFramesInFlight());
+   pool_sizes[2].descriptorCount = static_cast<uint32_t>(max_frames_in_flight);
+   pool_sizes[3].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+   pool_sizes[3].descriptorCount = static_cast<uint32_t>(max_frames_in_flight);
 
    VkDescriptorPoolCreateInfo pool_info{};
    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
    pool_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
    pool_info.pPoolSizes = pool_sizes.data();
-   pool_info.maxSets = static_cast<uint32_t>(CommonVK::getMaxFramesInFlight());
+   pool_info.maxSets = static_cast<uint32_t>(max_frames_in_flight);
 
    const VkResult result = vkCreateDescriptorPool(
       CommonVK::getDevice(),
@@ -328,10 +334,13 @@ void ObjectVK::createUniformBuffers()
    const int max_frames_in_flight = CommonVK::getMaxFramesInFlight();
    VkDeviceSize mvp_buffer_size = sizeof( MVPUniformBufferObject );
    VkDeviceSize material_buffer_size = sizeof( MaterialUniformBufferObject );
+   VkDeviceSize light_buffer_size = sizeof( LightUniformBufferObject );
    MVP.UniformBuffers.resize( max_frames_in_flight );
    MVP.UniformBuffersMemory.resize( max_frames_in_flight );
    Material.UniformBuffers.resize( max_frames_in_flight );
    Material.UniformBuffersMemory.resize( max_frames_in_flight );
+   Light.UniformBuffers.resize( max_frames_in_flight );
+   Light.UniformBuffersMemory.resize( max_frames_in_flight );
    for (size_t i = 0; i < max_frames_in_flight; ++i) {
       CommonVK::createBuffer(
          mvp_buffer_size,
@@ -347,6 +356,14 @@ void ObjectVK::createUniformBuffers()
          VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
          Material.UniformBuffers[i],
          Material.UniformBuffersMemory[i]
+      );
+
+      CommonVK::createBuffer(
+         light_buffer_size,
+         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+         Light.UniformBuffers[i],
+         Light.UniformBuffersMemory[i]
       );
    }
 }
@@ -385,7 +402,12 @@ void ObjectVK::createDescriptorSets(VkDescriptorSetLayout descriptor_set_layout)
       material_buffer_info.offset = 0;
       material_buffer_info.range = sizeof( MaterialUniformBufferObject );
 
-      std::array<VkWriteDescriptorSet, 3> descriptor_writes{};
+      VkDescriptorBufferInfo light_buffer_info{};
+      light_buffer_info.buffer = Light.UniformBuffers[i];
+      light_buffer_info.offset = 0;
+      light_buffer_info.range = sizeof( LightUniformBufferObject );
+
+      std::array<VkWriteDescriptorSet, 4> descriptor_writes{};
       descriptor_writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
       descriptor_writes[0].dstSet = DescriptorSets[i];
       descriptor_writes[0].dstBinding = 0;
@@ -409,6 +431,14 @@ void ObjectVK::createDescriptorSets(VkDescriptorSetLayout descriptor_set_layout)
       descriptor_writes[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
       descriptor_writes[2].descriptorCount = 1;
       descriptor_writes[2].pBufferInfo = &material_buffer_info;
+
+      descriptor_writes[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+      descriptor_writes[3].dstSet = DescriptorSets[i];
+      descriptor_writes[3].dstBinding = 3;
+      descriptor_writes[3].dstArrayElement = 0;
+      descriptor_writes[3].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+      descriptor_writes[3].descriptorCount = 1;
+      descriptor_writes[3].pBufferInfo = &light_buffer_info;
 
       vkUpdateDescriptorSets(
          CommonVK::getDevice(),
@@ -448,6 +478,15 @@ void ObjectVK::updateUniformBuffer(uint32_t current_image, VkExtent2D extent, co
    material.SpecularColor = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
    material.SpecularExponent = 0.0f;
 
+   LightUniformBufferObject light{};
+   light.Position = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+   light.AmbientColor = glm::vec4(0.3f, 0.3f, 0.3f, 1.0f);
+   light.DiffuseColor = glm::vec4(0.7f, 0.7f, 0.7f, 1.0f);
+   light.SpecularColor = glm::vec4(0.9f, 0.9f, 0.9f, 1.0f);
+   light.AttenuationFactors = glm::vec3(1.0f, 0.0f, 0.0f);
+   light.SpotlightDirection = glm::vec3(0.0f, 0.0f, -1.0f);
+   light.SpotlightExponent = 0.0f;
+   light.SpotlightCutoffAngle = 180.0f;
 
    void* mvp_data;
    vkMapMemory(
@@ -466,4 +505,13 @@ void ObjectVK::updateUniformBuffer(uint32_t current_image, VkExtent2D extent, co
    );
       std::memcpy( material_data, &material, sizeof( material ) );
    vkUnmapMemory( CommonVK::getDevice(), Material.UniformBuffersMemory[current_image] );
+
+   void* light_data;
+   vkMapMemory(
+      CommonVK::getDevice(),
+      Light.UniformBuffersMemory[current_image],
+      0, sizeof( light ), 0, &light_data
+   );
+      std::memcpy( light_data, &light, sizeof( light ) );
+   vkUnmapMemory( CommonVK::getDevice(), Light.UniformBuffersMemory[current_image] );
 }
