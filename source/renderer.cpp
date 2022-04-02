@@ -708,7 +708,6 @@ void RendererVK::writeFrame()
       dst_image_memory
    );
 
-
    VkCommandBuffer copy_command = CommonVK::createCommandBuffer( VK_COMMAND_BUFFER_LEVEL_PRIMARY );
 
    CommonVK::insertImageMemoryBarrier(
