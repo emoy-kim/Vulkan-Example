@@ -404,10 +404,10 @@ void RendererVK::createCommandBuffer()
 
 void RendererVK::createSyncObjects()
 {
-   const int max_frames_in_fligh = CommonVK::getMaxFramesInFlight();
-   ImageAvailableSemaphores.resize( max_frames_in_fligh );
-   RenderFinishedSemaphores.resize( max_frames_in_fligh );
-   InFlightFences.resize( max_frames_in_fligh );
+   const int max_frames_in_flight = CommonVK::getMaxFramesInFlight();
+   ImageAvailableSemaphores.resize( max_frames_in_flight );
+   RenderFinishedSemaphores.resize( max_frames_in_flight );
+   InFlightFences.resize( max_frames_in_flight );
 
    VkSemaphoreCreateInfo semaphore_info{};
    semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -416,7 +416,7 @@ void RendererVK::createSyncObjects()
    fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
    fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-   for (size_t i = 0; i < max_frames_in_fligh; ++i) {
+   for (size_t i = 0; i < max_frames_in_flight; ++i) {
       const VkResult image_available_semaphore_result = vkCreateSemaphore(
          CommonVK::getDevice(),
          &semaphore_info,
@@ -779,20 +779,19 @@ void RendererVK::writeFrame()
 
    CommonVK::flushCommandBuffer( copy_command );
 
-   VkImageSubresource subResource{};
-   subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-   VkSubresourceLayout subResourceLayout;
-
+   VkImageSubresource subresource{};
+   subresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+   VkSubresourceLayout subresource_layout;
    vkGetImageSubresourceLayout(
       CommonVK::getDevice(),
       dst_image,
-      &subResource,
-      &subResourceLayout
+      &subresource,
+      &subresource_layout
    );
 
    uint8_t* image_data;
    vkMapMemory( CommonVK::getDevice(), dst_image_memory, 0, VK_WHOLE_SIZE, 0, (void**)&image_data);
-   image_data += subResourceLayout.offset;
+   image_data += subresource_layout.offset;
 
    const std::string file_name = std::filesystem::path(CMAKE_SOURCE_DIR) / "frame.png";
    FIBITMAP* image = FreeImage_ConvertFromRawBits(
