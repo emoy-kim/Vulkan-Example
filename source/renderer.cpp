@@ -801,7 +801,7 @@ void RendererVK::writeFrame()
       static_cast<int>(FrameHeight),
       static_cast<int>(FrameWidth) * 4,
       32,
-      FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, false
+      FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK, true
    );
    FreeImage_Save( FIF_PNG, image, file_name.c_str() );
    FreeImage_Unload( image );
