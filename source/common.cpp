@@ -386,3 +386,86 @@ VkImageView CommonVK::createImageView(VkImage image, VkFormat format, VkImageAsp
    if (result != VK_SUCCESS) throw std::runtime_error("failed to create texture image View!");
    return image_view;
 }
+
+VkCommandBuffer CommonVK::createCommandBuffer(VkCommandBufferLevel level)
+{
+   VkCommandBufferAllocateInfo command_buffer_allocate_info {};
+   command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+   command_buffer_allocate_info.commandPool = CommandPool;
+   command_buffer_allocate_info.level = level;
+   command_buffer_allocate_info.commandBufferCount = 1;
+
+   VkCommandBuffer command_buffer;
+   vkAllocateCommandBuffers(
+      Device,
+      &command_buffer_allocate_info,
+      &command_buffer
+   );
+
+   VkCommandBufferBeginInfo command_buffer_begin_info {};
+   command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+   vkBeginCommandBuffer( command_buffer, &command_buffer_begin_info );
+   return command_buffer;
+}
+
+void CommonVK::flushCommandBuffer(VkCommandBuffer command_buffer)
+{
+   if (command_buffer == VK_NULL_HANDLE) return;
+
+   vkEndCommandBuffer( command_buffer );
+
+   VkSubmitInfo submitInfo{};
+   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+   submitInfo.commandBufferCount = 1;
+   submitInfo.pCommandBuffers = &command_buffer;
+
+   VkFenceCreateInfo fence_create_info{};
+   fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+   fence_create_info.flags = 0;
+
+   VkFence fence;
+   vkCreateFence( Device, &fence_create_info, nullptr, &fence );
+   vkQueueSubmit( GraphicsQueue, 1, &submitInfo, fence );
+   vkWaitForFences( Device, 1, &fence, VK_TRUE, UINT64_MAX );
+   vkDestroyFence( Device, fence, nullptr );
+   vkFreeCommandBuffers(
+      Device,
+      CommandPool,
+      1,
+      &command_buffer
+   );
+}
+
+void CommonVK::insertImageMemoryBarrier(
+   VkCommandBuffer command_buffer,
+   VkImage image,
+   VkAccessFlags src_access_mask,
+   VkAccessFlags dst_access_mask,
+   VkImageLayout old_image_layout,
+   VkImageLayout new_image_layout,
+   VkPipelineStageFlags src_stage_mask,
+   VkPipelineStageFlags dst_stage_mask,
+   VkImageSubresourceRange subresource_range
+)
+{
+   VkImageMemoryBarrier imageMemoryBarrier {};
+   imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+   imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+   imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+   imageMemoryBarrier.srcAccessMask = src_access_mask;
+   imageMemoryBarrier.dstAccessMask = dst_access_mask;
+   imageMemoryBarrier.oldLayout = old_image_layout;
+   imageMemoryBarrier.newLayout = new_image_layout;
+   imageMemoryBarrier.image = image;
+   imageMemoryBarrier.subresourceRange = subresource_range;
+
+   vkCmdPipelineBarrier(
+      command_buffer,
+      src_stage_mask,
+      dst_stage_mask,
+      0,
+      0, nullptr,
+      0, nullptr,
+      1, &imageMemoryBarrier
+   );
+}

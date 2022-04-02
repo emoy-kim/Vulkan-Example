@@ -67,6 +67,19 @@ public:
       VkDeviceMemory& image_memory
    );
    static VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspect_flags);
+   static VkCommandBuffer createCommandBuffer(VkCommandBufferLevel level);
+   static void flushCommandBuffer(VkCommandBuffer commandBuffer);
+   static void insertImageMemoryBarrier(
+      VkCommandBuffer command_buffer,
+      VkImage image,
+      VkAccessFlags src_access_mask,
+      VkAccessFlags dst_access_mask,
+      VkImageLayout old_image_layout,
+      VkImageLayout new_image_layout,
+      VkPipelineStageFlags src_stage_mask,
+      VkPipelineStageFlags dst_stage_mask,
+      VkImageSubresourceRange subresource_range
+   );
 
 private:
    inline static const std::array<const char*, 1> ValidationLayers = {

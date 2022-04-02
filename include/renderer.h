@@ -19,9 +19,9 @@ private:
    VkInstance Instance;
    VkSurfaceKHR Surface;
    VkSwapchainKHR SwapChain;
-   std::vector<VkImage> SwapChainImages;
    VkFormat SwapChainImageFormat;
    VkExtent2D SwapChainExtent;
+   std::vector<VkImage> SwapChainImages;
    std::vector<VkImageView> SwapChainImageViews;
    std::vector<VkFramebuffer> SwapChainFramebuffers;
    VkImage DepthImage;
@@ -111,6 +111,7 @@ private:
    void recordCommandBuffer(VkCommandBuffer command_buffer, uint32_t image_index);
    void recreateSwapChain();
    void drawFrame();
+   void writeFrame();
    [[nodiscard]] static std::vector<const char*> getRequiredExtensions();
    void createInstance();
 };
