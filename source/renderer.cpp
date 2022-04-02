@@ -795,7 +795,7 @@ void RendererVK::writeFrame()
    vkMapMemory( CommonVK::getDevice(), dst_image_memory, 0, VK_WHOLE_SIZE, 0, (void**)&image_data);
    image_data += subResourceLayout.offset;
 
-   const std::string file_name = "../headless.png";
+   const std::string file_name = std::filesystem::path(CMAKE_SOURCE_DIR) / "frame.png";
    FIBITMAP* image = FreeImage_ConvertFromRawBits(
       image_data,
       static_cast<int>(FrameWidth),
