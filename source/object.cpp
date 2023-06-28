@@ -485,8 +485,9 @@ void ObjectVK::updateUniformBuffer(uint32_t current_image, VkExtent2D extent, co
    light.SpecularColor = glm::vec4(0.9f, 0.9f, 0.9f, 1.0f);
    light.AttenuationFactors = glm::vec3(1.0f, 1.0f, 1.0f);
    light.SpotlightDirection = glm::vec3(0.0f, 0.0f, -2.0f);
-   light.SpotlightExponent = 32.0f;
    light.SpotlightCutoffAngle = 45.0f;
+   light.SpotlightFeather = 0.5f;
+   light.FallOffRadius = 1000.0f;
 
    void* mvp_data;
    vkMapMemory(

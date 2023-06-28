@@ -23,8 +23,9 @@ layout (binding = 3) uniform LightInfo
    vec4 SpecularColor;
    vec3 AttenuationFactors;
    vec3 SpotlightDirection;
-   float SpotlightExponent;
    float SpotlightCutoffAngle;
+   float SpotlightFeather;
+   float FallOffRadius;
 } light;
 
 layout (location = 0) in vec3 position_in_ec;
@@ -35,6 +36,7 @@ layout(location = 0) out vec4 final_color;
 
 const float zero = 0.0f;
 const float one = 1.0f;
+const float half_pi = 1.57079632679489661923132169163975144f;
 const vec4 global_ambient_color = vec4(0.2f, 0.2f, 0.2f, one);
 
 bool IsPointLight(in vec4 light_position)
@@ -44,22 +46,29 @@ bool IsPointLight(in vec4 light_position)
 
 float getAttenuation(in vec3 light_vector)
 {
-   vec3 distance_scale;
-   distance_scale.x = one;
-   distance_scale.z = dot( light_vector, light_vector );
-   distance_scale.y = sqrt( distance_scale.z );
-   return one / dot( distance_scale, light.AttenuationFactors );
+   float squared_distance = dot( light_vector, light_vector );
+   float distance = sqrt( squared_distance );
+   float radius = light.FallOffRadius;
+   if (distance <= radius) return one;
+
+   return clamp( radius * radius / squared_distance, zero, one );
 }
 
 float getSpotlightFactor(in vec3 normalized_light_vector)
 {
    if (light.SpotlightCutoffAngle >= 180.0f) return one;
 
-   vec4 direction_in_ec = transpose( inverse( mvp.ViewMatrix ) ) * vec4(light.SpotlightDirection, one);
+   vec4 direction_in_ec = transpose( inverse( mvp.ViewMatrix ) ) * vec4(light.SpotlightDirection, zero);
    vec3 normalized_direction = normalize( direction_in_ec.xyz );
-   float cutoff_angle = clamp( light.SpotlightCutoffAngle, zero, 90.0f );
    float factor = dot( -normalized_light_vector, normalized_direction );
-   return factor >= cos( radians( cutoff_angle ) ) ? pow( factor, light.SpotlightExponent ) : zero;
+   float cutoff_angle = radians( clamp( light.SpotlightCutoffAngle, zero, 90.0f ) );
+   if (factor >= cos( cutoff_angle )) {
+      float normalized_angle = acos( factor ) * half_pi / cutoff_angle;
+      float threshold = half_pi * (one - light.SpotlightFeather);
+      return normalized_angle <= threshold ? one :
+         cos( half_pi * (normalized_angle - threshold) / (half_pi - threshold) );
+   }
+   return zero;
 }
 
 vec4 calculateLightingEquation()
@@ -91,7 +100,7 @@ vec4 calculateLightingEquation()
       pow( specular_intensity, material.SpecularExponent ) * 
       light.SpecularColor * material.SpecularColor;
    
-   color += local_color;
+   color += local_color * final_effect_factor;
    return color;
 }
 

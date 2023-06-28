@@ -64,8 +64,9 @@ private:
       alignas(16) glm::vec4 SpecularColor;
       alignas(16) glm::vec3 AttenuationFactors;
       alignas(16) glm::vec3 SpotlightDirection;
-      alignas(16) float SpotlightExponent;
       alignas(16) float SpotlightCutoffAngle;
+      alignas(16) float SpotlightFeather;
+      alignas(16) float FallOffRadius;
    };
 
    CommonVK* Common;
