@@ -55,9 +55,7 @@ float getSpotlightFactor(in vec3 normalized_light_vector)
 {
    if (light.SpotlightCutoffAngle >= 180.0f) return one;
 
-   vec4 direction_in_ec = 
-      transpose( inverse( mvp.ViewMatrix * mvp.WorldMatrix ) ) * 
-      vec4(light.SpotlightDirection, 1.0f);
+   vec4 direction_in_ec = transpose( inverse( mvp.ViewMatrix ) ) * vec4(light.SpotlightDirection, one);
    vec3 normalized_direction = normalize( direction_in_ec.xyz );
    float cutoff_angle = clamp( light.SpotlightCutoffAngle, zero, 90.0f );
    float factor = dot( -normalized_light_vector, normalized_direction );
